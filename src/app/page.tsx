@@ -11,6 +11,7 @@ export default function Home() {
   const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
+  
   // Cargar órdenes desde localStorage
   useEffect(() => {
     const storedOrders = localStorage.getItem("orders");
@@ -68,6 +69,13 @@ export default function Home() {
     setIsModalOpen(false);
   };
 
+  const toggleDelivered = (index: number) => {
+    const updatedOrders = [...orders];
+    updatedOrders[index].delivered = !updatedOrders[index].delivered;
+    setOrders(updatedOrders);
+  };
+  
+
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
       <div className="grid grid-cols-4">
@@ -82,9 +90,9 @@ export default function Home() {
               onClick={openAddModal}
               className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
             >
-              Agregar Pedido
+              Añadir Pedido
             </button>
-            <Table orders={orders} onEditOrder={openEditModal} />
+            <Table orders={orders} onEditOrder={openEditModal} onToggleDelivered={toggleDelivered} />
           </div>
         </div>
 

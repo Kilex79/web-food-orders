@@ -7,6 +7,7 @@ export interface Order {
   time: string;
   name: string;
   paid: boolean;
+  delivered: boolean;
   phone: boolean;
 }
 
@@ -41,6 +42,7 @@ export function OrderModal({
       time: getCurrentTime(),
       name: "",
       paid: false,
+      delivered: false,
       phone: false,
     }
   );
@@ -56,6 +58,7 @@ export function OrderModal({
         time: getCurrentTime(),
         name: "",
         paid: false,
+        delivered: false,
         phone: false,
       });
     }
@@ -77,6 +80,7 @@ export function OrderModal({
       time: getCurrentTime(),
       name: "",
       paid: false,
+      delivered: false,
       phone: false,
     });
     onClose();
