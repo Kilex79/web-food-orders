@@ -23,11 +23,19 @@ export function Table({
   onEditOrder,
   onToggleDelivered,
 }: TableProps) {
+
+  // Ordenar las órdenes por la hora (de más temprano a más tarde)
+  const sortedOrders = [...orders].sort((a, b) => {
+    const timeA = Date.parse(`1970-01-01T${a.time}:00Z`); // Formato compatible con Date.parse
+    const timeB = Date.parse(`1970-01-01T${b.time}:00Z`);
+    return timeA - timeB; // Orden ascendente
+  });
+
   return (
     <div className="overflow-x-auto rounded-lg">
       {title && <h2 className="text-xl font-bold mb-4">{title}</h2>}
-      <table className="min-w-full divide-y divide-gray-200 bg-white dark:bg-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-800">
+      <table className="min-w-full divide-y divide-gray-200 bg-white dark:bg-gray-700 ">
+        <thead className="bg-gray-50 dark:bg-gray-800 ">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Pollos
@@ -52,11 +60,11 @@ export function Table({
             </th>
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-700 dark:divide-gray-600">
-          {orders.map((order, index) => (
+        <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-700 dark:divide-gray-600 ">
+          {sortedOrders.map((order, index) => (
             <tr
               key={index}
-              className={`hover:bg-gray-100 dark:hover:bg-gray-600 ${
+              className={`hover:bg-gray-100 dark:hover:bg-gray-600  ${
                 order.delivered ? "opacity-50 bg-gray-500 bg-opacity-80" : ""
               }`}
             >

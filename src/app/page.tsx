@@ -11,12 +11,21 @@ export default function Home() {
   const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  
+  // Ordena las órdenes por hora (de más temprano a más tarde)
+  const sortOrdersByTime = (orders: Order[]) => {
+    return [...orders].sort((a, b) => {
+      const timeA = Date.parse(`1970-01-01T${a.time}:00Z`); // Formato compatible con Date.parse
+      const timeB = Date.parse(`1970-01-01T${b.time}:00Z`);
+      return timeA - timeB; // Orden ascendente
+    });
+  };
+
   // Cargar órdenes desde localStorage
   useEffect(() => {
     const storedOrders = localStorage.getItem("orders");
     if (storedOrders) {
-      setOrders(JSON.parse(storedOrders) as Order[]);
+      const parsedOrders = JSON.parse(storedOrders) as Order[];
+      setOrders(sortOrdersByTime(parsedOrders)); // Ordenar las órdenes al cargarlas
     }
   }, []);
 
@@ -29,22 +38,25 @@ export default function Home() {
 
   // Función para agregar o actualizar un pedido
   const saveOrder = (order: Order) => {
+    let updatedOrders: Order[];
+
     if (orderToEdit && editIndex !== null) {
       // Actualizar pedido existente
-      const updatedOrders = [...orders];
+      updatedOrders = [...orders];
       updatedOrders[editIndex] = order;
-      setOrders(updatedOrders);
     } else {
       // Agregar nuevo pedido
-      setOrders((prevOrders) => [...prevOrders, order]);
+      updatedOrders = [...orders, order];
     }
+
+    setOrders(sortOrdersByTime(updatedOrders)); // Asegurarse de ordenar las órdenes después de actualizar
   };
 
   // Función para eliminar un pedido (solo en modo edición)
   const deleteOrder = () => {
     if (editIndex !== null) {
       const updatedOrders = orders.filter((_, index) => index !== editIndex);
-      setOrders(updatedOrders);
+      setOrders(sortOrdersByTime(updatedOrders)); // Asegurarse de ordenar las órdenes después de eliminar
       closeModal();
     }
   };
@@ -72,9 +84,8 @@ export default function Home() {
   const toggleDelivered = (index: number) => {
     const updatedOrders = [...orders];
     updatedOrders[index].delivered = !updatedOrders[index].delivered;
-    setOrders(updatedOrders);
+    setOrders(sortOrdersByTime(updatedOrders)); // Asegurarse de ordenar las órdenes después de cambiar el estado
   };
-  
 
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">

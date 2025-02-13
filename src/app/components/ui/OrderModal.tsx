@@ -66,10 +66,28 @@ export function OrderModal({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setOrder((prevOrder) => ({
-      ...prevOrder,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+
+    if (name === "paid" && checked) {
+      // Si se marca "Pagado", desmarcar y deshabilitar "Teléfono"
+      setOrder((prevOrder) => ({
+        ...prevOrder,
+        paid: true,
+        phone: false, // Desmarcar teléfono
+      }));
+    } else if (name === "phone" && checked) {
+      // Si se marca "Teléfono", desmarcar y deshabilitar "Pagado"
+      setOrder((prevOrder) => ({
+        ...prevOrder,
+        phone: true,
+        paid: false, // Desmarcar pagado
+      }));
+    } else {
+      // Si no se selecciona ninguno, solo actualiza el valor del campo
+      setOrder((prevOrder) => ({
+        ...prevOrder,
+        [name]: type === "checkbox" ? checked : value,
+      }));
+    }
   };
 
   const handleClose = () => {
@@ -104,7 +122,7 @@ export function OrderModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 relative">
+      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 relative ">
         <h2 className="text-xl font-bold text-white mb-4">
           {isEditing ? "Editar Pedido" : "Agregar Pedido"}
         </h2>
@@ -148,6 +166,7 @@ export function OrderModal({
               checked={order.paid}
               onChange={handleChange}
               className="w-5 h-5"
+              disabled={order.phone} // Deshabilita si se marcó teléfono
             />
             <span>Pagado</span>
           </label>
@@ -159,6 +178,7 @@ export function OrderModal({
               checked={order.phone}
               onChange={handleChange}
               className="w-5 h-5"
+              disabled={order.paid} // Deshabilita si se marcó pagado
             />
             <span>Teléfono</span>
           </label>
