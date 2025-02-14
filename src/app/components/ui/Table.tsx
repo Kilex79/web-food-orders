@@ -24,13 +24,7 @@ export function Table({
   onToggleDelivered,
 }: TableProps) {
 
-  // Ordenar las órdenes por la hora (de más temprano a más tarde)
-  const sortedOrders = [...orders].sort((a, b) => {
-    const timeA = Date.parse(`1970-01-01T${a.time}:00Z`); // Formato compatible con Date.parse
-    const timeB = Date.parse(`1970-01-01T${b.time}:00Z`);
-    return timeA - timeB; // Orden ascendente
-  });
-
+  
   return (
     <div className="overflow-x-auto rounded-lg">
       {title && <h2 className="text-xl font-bold mb-4">{title}</h2>}
@@ -61,7 +55,7 @@ export function Table({
           </tr>
         </thead>
         <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-700 dark:divide-gray-600 ">
-          {sortedOrders.map((order, index) => (
+          {orders.map((order, index) => (
             <tr
               key={index}
               className={`hover:bg-gray-100 dark:hover:bg-gray-600  ${
