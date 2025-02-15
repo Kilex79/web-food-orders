@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import Details from "./components/ui/Details";
 import { Table } from "./components/ui/Table";
 import { OrderModal, Order } from "./components/ui/OrderModal";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
 
 export default function Home() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -19,7 +21,7 @@ export default function Home() {
     3: "Santañí",
     4: "Inca",
     5: "Llucmajor",
-    6: "Santañí",
+    6: "Santanyi",
   };
 
   // Obtener el día actual
@@ -134,9 +136,16 @@ export default function Home() {
       <div className="grid grid-cols-4">
         {/* Zona de Pedidos */}
         <div className="col-span-3 p-8 overflow-auto h-screen">
-          <h1 className="text-center text-4xl font-bold text-gray-100 dark:text-gray-100 mb-4 border-4 border-gray-700 dark:border-gray-700 rounded-lg p-4">
-            {`${currentDayTitle}`} {/* Muestra el día actual en el título */}
+          <h1 className="relative text-4xl font-bold text-gray-100 dark:text-gray-100 mb-4 border-4 border-gray-700 dark:border-gray-700 rounded-lg p-4">
+            <span className="block text-center w-full">{currentDayTitle}</span>
+            <Link
+              href="/info"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2"
+            >
+              <InformationCircleIcon className="h-8 w-8 text-blue-500 cursor-pointer" />
+            </Link>
           </h1>
+
           <div className="flex flex-col gap-4">
             {/* Al hacer clic, se abre el modal en modo "agregar" */}
             <button
