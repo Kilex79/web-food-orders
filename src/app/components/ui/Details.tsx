@@ -4,9 +4,11 @@ import { useState } from "react";
 interface DetailsProps {
   totalChickens: number;
   totalPotatoes: number;
+  deliveredChickens: number;
+  deliveredPotatoes: number;
 }
 
-export default function Details({ totalChickens, totalPotatoes }: DetailsProps) {
+export default function Details({ totalChickens, totalPotatoes, deliveredChickens, deliveredPotatoes }: DetailsProps) {
   const [hornoP, setHornoP] = useState(0);
   const [hornoPTT, setHornoPTT] = useState(0);
 
@@ -14,8 +16,8 @@ export default function Details({ totalChickens, totalPotatoes }: DetailsProps) 
     <div className="p-4 space-y-4">
       {/* Grupo 1: Totales */}
       <div className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-blue-600">
-        <h1 className="text-xl font-semibold text-white mb-4">Pollo Total: {hornoP + totalChickens}</h1>
-        <h1 className="text-xl font-semibold text-white mb-4">Patatas Total: {hornoPTT + totalPotatoes}</h1>
+        <h1 className="text-xl font-semibold text-white mb-4">Pollo Total: {(hornoP + totalChickens) - deliveredChickens}</h1>
+        <h1 className="text-xl font-semibold text-white mb-4">Patatas Total: {(hornoPTT + totalPotatoes) - deliveredPotatoes}</h1>
       </div>
 
       {/* Horno P */}
@@ -72,8 +74,8 @@ export default function Details({ totalChickens, totalPotatoes }: DetailsProps) 
 
       {/* Grupo 2: Pedidos */}
       <div className="bg-gray-700 p-6 rounded-lg shadow-lg border-l-4 border-yellow-500">
-        <h1 className="text-xl font-semibold text-white mb-4">Pollos Pedidos: {totalChickens}</h1>
-        <h1 className="text-xl font-semibold text-white mb-4">Patatas Pedidas: {totalPotatoes}</h1>
+        <h1 className="text-xl font-semibold text-white mb-4">Pollos Pedidos: {totalChickens - deliveredChickens}</h1>
+        <h1 className="text-xl font-semibold text-white mb-4">Patatas Pedidas: {totalPotatoes - deliveredPotatoes}</h1>
       </div>
 
       {/* Grupo 3: Sobras */}

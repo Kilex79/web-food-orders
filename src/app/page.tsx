@@ -13,7 +13,6 @@ export default function Home() {
   const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
-  // Mapear días a Strings
   const dayTitles: { [key: number]: string } = {
     0: "Santa María",
     1: "Manacor",
@@ -21,73 +20,107 @@ export default function Home() {
     3: "Santañí",
     4: "Inca",
     5: "Llucmajor",
-    6: "Santanyi",
+    6: "Santañí",
   };
 
-  // Obtener el día actual
-  const currentDay = new Date().getDay(); // Esto devuelve un número entre 0 (domingo) y 6 (sábado)
-  const currentDayTitle = dayTitles[currentDay]; // Esto obtiene el título correspondiente al día
+  const today = new Date();
+  const currentDay = today.getDay();
+  const currentDayTitle = dayTitles[currentDay];
 
-  // Ordenar las órdenes por hora
-  const sortOrdersByTime = (orders: Order[]) => {
-    return [...orders].sort((a, b) => {
-      const [hoursA, minutesA] = a.time.split(":").map(Number);
-      const [hoursB, minutesB] = b.time.split(":").map(Number);
-      const timeA = new Date().setHours(hoursA, minutesA, 0, 0);
-      const timeB = new Date().setHours(hoursB, minutesB, 0, 0);
-      return timeA - timeB; // Orden ascendente
-    });
+  const getDateKey = () => {
+    const day = today.getDate().toString().padStart(2, "0");
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
   };
 
-  // Cargar órdenes desde localStorage
-  useEffect(() => {
-    const storedOrders = localStorage.getItem("orders");
-    if (storedOrders) {
-      const parsedOrders = JSON.parse(storedOrders) as Order[];
-      setOrders(sortOrdersByTime(parsedOrders)); // Ordenar las órdenes al cargarlas
+  const dateKey = getDateKey();
+
+  const loadOrdersFromStorage = () => {
+    const storedData = localStorage.getItem(dateKey);
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        if (parsedData.orders) {
+          return parsedData.orders;
+        }
+      } catch (error) {
+        console.error("Error parsing stored orders:", error);
+      }
     }
-  }, []);
+    return [];
+  };
 
-  // Guardar órdenes en localStorage cuando cambien
+  useEffect(() => {
+    const storedOrders = loadOrdersFromStorage();
+    setOrders(storedOrders);
+  }, [dateKey]);
+
   useEffect(() => {
     if (orders.length > 0) {
-      localStorage.setItem("orders", JSON.stringify(orders));
-    }
-  }, [orders]);
+      const totalChickens = orders.reduce(
+        (total, order) => total + Number(order.chickens),
+        0
+      );
+      const totalPotatoes = orders.reduce(
+        (total, order) => total + Number(order.potatoes),
+        0
+      );
 
-  // Función para agregar o actualizar un pedido
+      const weekday = today.toLocaleDateString("es-ES", { weekday: "long" });
+      const dailySummary = {
+        title: currentDayTitle,
+        date: `${dateKey} - ${weekday}`,
+        orders: orders,
+        chickensSold: totalChickens,
+        potatoesSold: totalPotatoes,
+      };
+
+      localStorage.setItem(dateKey, JSON.stringify(dailySummary));
+    }
+  }, [orders, dateKey]);
+
+  const sortOrdersByTime = (orders: Order[]) => {
+    return [...orders].sort((a, b) => {
+      if (a.delivered === b.delivered) {
+        const [hoursA, minutesA] = a.time.split(":").map(Number);
+        const [hoursB, minutesB] = b.time.split(":").map(Number);
+        const timeA = new Date().setHours(hoursA, minutesA, 0, 0);
+        const timeB = new Date().setHours(hoursB, minutesB, 0, 0);
+        return timeA - timeB;
+      }
+      return a.delivered ? 1 : -1;
+    });
+  };
+  
   const saveOrder = (order: Order) => {
     let updatedOrders: Order[];
-
+  
     if (orderToEdit && editIndex !== null) {
-      // Actualizar pedido existente
       updatedOrders = [...orders];
       updatedOrders[editIndex] = order;
     } else {
-      // Agregar nuevo pedido
       updatedOrders = [...orders, order];
     }
-
-    setOrders(sortOrdersByTime(updatedOrders)); // Asegurarse de ordenar las órdenes después de actualizar
+  
+    setOrders(sortOrdersByTime(updatedOrders));
   };
+  
 
-  // Función para eliminar un pedido (solo en modo edición)
   const deleteOrder = () => {
     if (editIndex !== null) {
       const updatedOrders = orders.filter((_, index) => index !== editIndex);
-      setOrders(sortOrdersByTime(updatedOrders)); // Asegurarse de ordenar las órdenes después de eliminar
+      setOrders(updatedOrders);
       closeModal();
     }
   };
 
-  // Al hacer clic en "Agregar Pedido", nos aseguramos de que no haya pedido a editar.
   const openAddModal = () => {
     setOrderToEdit(null);
     setEditIndex(null);
     setIsModalOpen(true);
   };
 
-  // Al hacer clic en el botón de editar, se establece el pedido a editar y su índice.
   const openEditModal = (order: Order, index: number) => {
     setOrderToEdit(order);
     setEditIndex(index);
@@ -104,37 +137,26 @@ export default function Home() {
     const updatedOrders = [...orders];
     updatedOrders[index].delivered = !updatedOrders[index].delivered;
 
-    // Mover los pedidos entregados al final
     const sortedOrders = [...updatedOrders].sort((a, b) => {
       if (a.delivered === b.delivered) {
-        // Si ambos tienen el mismo estado de entrega, ordenar por hora
         const [hoursA, minutesA] = a.time.split(":").map(Number);
         const [hoursB, minutesB] = b.time.split(":").map(Number);
         const timeA = new Date().setHours(hoursA, minutesA, 0, 0);
         const timeB = new Date().setHours(hoursB, minutesB, 0, 0);
         return timeA - timeB;
       }
-      return a.delivered ? 1 : -1; // Los entregados al final
+      return a.delivered ? 1 : -1;
     });
 
     setOrders(sortedOrders);
-    localStorage.setItem("orders", JSON.stringify(sortedOrders)); // Guardar en localStorage
+    localStorage.setItem(dateKey, JSON.stringify(sortedOrders));
   };
+  
 
-  // Calcular las cantidades totales de pollos y patatas
-  const totalChickens = orders.reduce(
-    (total, order) => total + Number(order.chickens),
-    0
-  );
-  const totalPotatoes = orders.reduce(
-    (total, order) => total + Number(order.potatoes),
-    0
-  );
 
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
       <div className="grid grid-cols-4">
-        {/* Zona de Pedidos */}
         <div className="col-span-3 p-8 overflow-auto h-screen">
           <h1 className="relative text-4xl font-bold text-gray-100 dark:text-gray-100 mb-4 border-4 border-gray-700 dark:border-gray-700 rounded-lg p-4">
             <span className="block text-center w-full">{currentDayTitle}</span>
@@ -147,7 +169,6 @@ export default function Home() {
           </h1>
 
           <div className="flex flex-col gap-4">
-            {/* Al hacer clic, se abre el modal en modo "agregar" */}
             <button
               onClick={openAddModal}
               className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
@@ -161,17 +182,15 @@ export default function Home() {
             />
           </div>
         </div>
-
-        {/* Zona de Detalles */}
         <div className="col-span-1 h-screen border-l-4 border-gray-700 dark:border-gray-700 bg-gray-800 dark:bg-gray-800">
           <Details
-            totalChickens={totalChickens}
-            totalPotatoes={totalPotatoes}
+            totalChickens={orders.reduce((total, order) => total + Number(order.chickens), 0)}
+            totalPotatoes={orders.reduce((total, order) => total + Number(order.potatoes), 0)}
+            deliveredChickens={orders.filter((order) => order.delivered).reduce((total, order) => total + Number(order.chickens), 0)}
+            deliveredPotatoes={orders.filter((order) => order.delivered).reduce((total, order) => total + Number(order.potatoes), 0)}
           />
         </div>
       </div>
-
-      {/* Modal unificado para agregar/editar órdenes */}
       <OrderModal
         isOpen={isModalOpen}
         onClose={closeModal}
@@ -182,3 +201,195 @@ export default function Home() {
     </main>
   );
 }
+
+
+/*
+"use client";
+
+import { useState, useEffect } from "react";
+import Details from "./components/ui/Details";
+import { Table } from "./components/ui/Table";
+import { OrderModal, Order } from "./components/ui/OrderModal";
+import { InformationCircleIcon } from "@heroicons/react/24/solid";
+import Link from "next/link";
+
+export default function Home() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
+
+  const dayTitles: { [key: number]: string } = {
+    0: "Santa María",
+    1: "Manacor",
+    2: "Pedidos",
+    3: "Santañí",
+    4: "Inca",
+    5: "Llucmajor",
+    6: "Santañí",
+  };
+
+  const today = new Date();
+  const currentDay = today.getDay();
+  const currentDayTitle = dayTitles[currentDay];
+
+  const getDateKey = () => {
+    const day = today.getDate().toString().padStart(2, "0");
+    const month = (today.getMonth() + 1).toString().padStart(2, "0");
+    const year = today.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const dateKey = getDateKey();
+
+  const loadOrdersFromStorage = () => {
+    const storedData = localStorage.getItem(dateKey);
+    if (storedData) {
+      try {
+        const parsedData = JSON.parse(storedData);
+        if (parsedData.orders) {
+          return parsedData.orders;
+        }
+      } catch (error) {
+        console.error("Error parsing stored orders:", error);
+      }
+    }
+    return [];
+  };
+
+  useEffect(() => {
+    const storedOrders = loadOrdersFromStorage();
+    setOrders(storedOrders);
+  }, [dateKey]);
+
+  useEffect(() => {
+    if (orders.length > 0) {
+      const totalChickens = orders.reduce(
+        (total, order) => total + Number(order.chickens),
+        0
+      );
+      const totalPotatoes = orders.reduce(
+        (total, order) => total + Number(order.potatoes),
+        0
+      );
+
+      const weekday = today.toLocaleDateString("es-ES", { weekday: "long" });
+      const dailySummary = {
+        title: currentDayTitle,
+        date: `${dateKey} - ${weekday}`,
+        orders: orders,
+        chickensSold: totalChickens,
+        potatoesSold: totalPotatoes,
+      };
+
+      localStorage.setItem(dateKey, JSON.stringify(dailySummary));
+    }
+  }, [orders, dateKey]);
+
+  const saveOrder = (order: Order) => {
+    let updatedOrders: Order[];
+
+    if (orderToEdit && editIndex !== null) {
+      updatedOrders = [...orders];
+      updatedOrders[editIndex] = order;
+    } else {
+      updatedOrders = [...orders, order];
+    }
+
+    setOrders(updatedOrders);
+  };
+
+  const deleteOrder = () => {
+    if (editIndex !== null) {
+      const updatedOrders = orders.filter((_, index) => index !== editIndex);
+      setOrders(updatedOrders);
+      closeModal();
+    }
+  };
+
+  const openAddModal = () => {
+    setOrderToEdit(null);
+    setEditIndex(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditModal = (order: Order, index: number) => {
+    setOrderToEdit(order);
+    setEditIndex(index);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setOrderToEdit(null);
+    setEditIndex(null);
+    setIsModalOpen(false);
+  };
+
+  const toggleDelivered = (index: number) => {
+  const updatedOrders = [...orders];
+
+  // Cambiamos el estado de "delivered" en la orden seleccionada
+  updatedOrders[index].delivered = !updatedOrders[index].delivered;
+
+  // Separar pedidos no entregados y entregados
+  const pendingOrders = updatedOrders
+    .filter(order => !order.delivered)
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()); // Orden ascendente
+
+  const deliveredOrders = updatedOrders
+    .filter(order => order.delivered)
+    .sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()); // Orden ascendente
+
+  // Concatenamos: primero los no entregados, luego los entregados
+  setOrders([...pendingOrders, ...deliveredOrders]);
+};
+
+
+  return (
+    <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
+      <div className="grid grid-cols-4">
+        <div className="col-span-3 p-8 overflow-auto h-screen">
+          <h1 className="relative text-4xl font-bold text-gray-100 dark:text-gray-100 mb-4 border-4 border-gray-700 dark:border-gray-700 rounded-lg p-4">
+            <span className="block text-center w-full">{currentDayTitle}</span>
+            <Link
+              href="/info"
+              className="absolute right-4 top-1/2 transform -translate-y-1/2"
+            >
+              <InformationCircleIcon className="h-8 w-8 text-blue-500 cursor-pointer" />
+            </Link>
+          </h1>
+
+          <div className="flex flex-col gap-4">
+            <button
+              onClick={openAddModal}
+              className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            >
+              Añadir Pedido
+            </button>
+            <Table
+              orders={orders}
+              onEditOrder={openEditModal}
+              onToggleDelivered={toggleDelivered}
+            />
+          </div>
+        </div>
+        <div className="col-span-1 h-screen border-l-4 border-gray-700 dark:border-gray-700 bg-gray-800 dark:bg-gray-800">
+          <Details
+            totalChickens={orders.reduce((total, order) => total + Number(order.chickens), 0)}
+            totalPotatoes={orders.reduce((total, order) => total + Number(order.potatoes), 0)}
+            deliveredChickens={orders.filter((order) => order.delivered).reduce((total, order) => total + Number(order.chickens), 0)}
+            deliveredPotatoes={orders.filter((order) => order.delivered).reduce((total, order) => total + Number(order.potatoes), 0)}
+          />
+        </div>
+      </div>
+      <OrderModal
+        isOpen={isModalOpen}
+        onClose={closeModal}
+        onSaveOrder={saveOrder}
+        onDeleteOrder={orderToEdit ? deleteOrder : undefined}
+        initialOrder={orderToEdit || undefined}
+      />
+    </main>
+  );
+}
+*/

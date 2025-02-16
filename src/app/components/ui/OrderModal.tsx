@@ -9,6 +9,7 @@ export interface Order {
   paid: boolean;
   delivered: boolean;
   phone: boolean;
+  preferences?: string[]; // Opcional: preferencias seleccionadas
 }
 
 // Props para el modal unificado
@@ -19,6 +20,7 @@ interface OrderModalProps {
   onDeleteOrder?: () => void; // Opcional, solo se usa en modo edición
   initialOrder?: Order; // Si se provee, el modal estará en modo edición
 }
+
 
 // Función para obtener la hora actual con minutos en "00"
 const getCurrentTime = () => {
@@ -182,6 +184,27 @@ export function OrderModal({
             />
             <span>Teléfono</span>
           </label>
+        </div>
+
+        <div className="mt-4 flex gap-2 justify-center ">
+          <button
+            //onClick={() => handleDelete(selectedEntry.key)}
+            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          >
+            MS
+          </button>
+          <button
+            //onClick={() => handleDelete(selectedEntry.key)}
+            className=" bg-stone-500 hover:bg-stone-600 text-white px-4 py-2 rounded"
+          >
+            S/S
+          </button>
+          <button
+            //onClick={() => handleDelete(selectedEntry.key)}
+            className=" bg-orange-700 hover:bg-orange-800 text-white px-4 py-2 rounded"
+          >
+            BH
+          </button>
         </div>
 
         <div className="flex justify-end mt-4 gap-4">
