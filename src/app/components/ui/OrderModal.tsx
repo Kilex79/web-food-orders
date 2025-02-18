@@ -9,7 +9,7 @@ export interface Order {
   paid: boolean;
   delivered: boolean;
   phone: boolean;
-  preferences?: string[]; // Opcional: preferencias seleccionadas
+  preferences: string[], // Opcional: preferencias seleccionadas
 }
 
 // Props para el modal unificado
@@ -20,7 +20,6 @@ interface OrderModalProps {
   onDeleteOrder?: () => void; // Opcional, solo se usa en modo edición
   initialOrder?: Order; // Si se provee, el modal estará en modo edición
 }
-
 
 // Función para obtener la hora actual con minutos en "00"
 const getCurrentTime = () => {
@@ -46,6 +45,7 @@ export function OrderModal({
       paid: false,
       delivered: false,
       phone: false,
+      preferences: [],
     }
   );
 
@@ -62,6 +62,7 @@ export function OrderModal({
         paid: false,
         delivered: false,
         phone: false,
+        preferences: [],
       });
     }
   }, [initialOrder, isOpen]);
@@ -84,12 +85,25 @@ export function OrderModal({
         paid: false, // Desmarcar pagado
       }));
     } else {
-      // Si no se selecciona ninguno, solo actualiza el valor del campo
       setOrder((prevOrder) => ({
         ...prevOrder,
-        [name]: type === "checkbox" ? checked : value,
+        [name]:
+          type === "checkbox"
+            ? checked
+            : type === "number"
+            ? Number(value)
+            : value,
       }));
     }
+  };
+
+  const handlePreferenceToggle = (preference: string) => {
+    setOrder((prevOrder) => {
+      const preferences = prevOrder.preferences.includes(preference)
+        ? prevOrder.preferences.filter((pref) => pref !== preference)
+        : [...prevOrder.preferences, preference];
+      return { ...prevOrder, preferences };
+    });
   };
 
   const handleClose = () => {
@@ -102,6 +116,7 @@ export function OrderModal({
       paid: false,
       delivered: false,
       phone: false,
+      preferences: [],
     });
     onClose();
   };
@@ -123,119 +138,129 @@ export function OrderModal({
   const isEditing = initialOrder !== undefined;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 relative ">
-        <h2 className="text-xl font-bold text-white mb-4">
-          {isEditing ? "Editar Pedido" : "Agregar Pedido"}
-        </h2>
-        <input
-          type="text"
-          name="name"
-          placeholder="Nombre"
-          value={order.name}
-          onChange={handleChange}
-          className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
-        />
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+    <div className="bg-gray-800 p-6 rounded-lg shadow-lg w-96 relative">
+      <h2 className="text-xl font-bold text-white mb-4">
+        {isEditing ? "Editar Pedido" : "Agregar Pedido"}
+      </h2>
+      <input
+        type="text"
+        name="name"
+        placeholder="Nombre"
+        value={order.name}
+        onChange={handleChange}
+        className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
+      />
+      <div className="mb-2">
+        <label className="text-white block mb-1">Pollos 🐔</label>
         <input
           type="number"
           name="chickens"
           min="0"
+          step="0.5"
           value={order.chickens}
           onChange={handleChange}
-          className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
+          className="w-full p-2 rounded bg-gray-700 text-white"
         />
+      </div>
+      <div className="mb-2">
+        <label className="text-white block mb-1">Patatas 🥔</label>
         <input
           type="number"
           name="potatoes"
           min="0"
+          step="0.5"
           value={order.potatoes}
           onChange={handleChange}
-          className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
+          className="w-full p-2 rounded bg-gray-700 text-white"
         />
-        <input
-          type="time"
-          name="time"
-          min={getCurrentTime()}
-          value={order.time}
-          onChange={handleChange}
-          className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
-        />
-        <div className="flex flex-col text-white mt-2">
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="paid"
-              checked={order.paid}
-              onChange={handleChange}
-              className="w-5 h-5"
-              disabled={order.phone} // Deshabilita si se marcó teléfono
-            />
-            <span>Pagado</span>
-          </label>
+      </div>
+      <input
+        type="time"
+        name="time"
+        min={getCurrentTime()}
+        value={order.time}
+        onChange={handleChange}
+        className="w-full p-2 mb-2 rounded bg-gray-700 text-white"
+      />
+      <div className="flex flex-col text-white mt-2">
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="paid"
+            checked={order.paid}
+            onChange={handleChange}
+            className="w-5 h-5"
+            disabled={order.phone} // Deshabilita si se marcó teléfono
+          />
+          <span>Pagado</span>
+        </label>
 
-          <label className="flex items-center gap-2 pt-4">
-            <input
-              type="checkbox"
-              name="phone"
-              checked={order.phone}
-              onChange={handleChange}
-              className="w-5 h-5"
-              disabled={order.paid} // Deshabilita si se marcó pagado
-            />
-            <span>Teléfono</span>
-          </label>
-        </div>
+        <label className="flex items-center gap-2 pt-4">
+          <input
+            type="checkbox"
+            name="phone"
+            checked={order.phone}
+            onChange={handleChange}
+            className="w-5 h-5"
+            disabled={order.paid} // Deshabilita si se marcó pagado
+          />
+          <span>Teléfono</span>
+        </label>
+      </div>
 
-        <div className="mt-4 flex gap-2 justify-center ">
-          <button
-            //onClick={() => handleDelete(selectedEntry.key)}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-          >
-            MS
-          </button>
-          <button
-            //onClick={() => handleDelete(selectedEntry.key)}
-            className=" bg-stone-500 hover:bg-stone-600 text-white px-4 py-2 rounded"
-          >
-            S/S
-          </button>
-          <button
-            //onClick={() => handleDelete(selectedEntry.key)}
-            className=" bg-orange-700 hover:bg-orange-800 text-white px-4 py-2 rounded"
-          >
-            BH
-          </button>
-        </div>
-
-        <div className="flex justify-end mt-4 gap-4">
-          <button
-            onClick={handleClose}
-            className="bg-red-500 px-4 py-2 rounded mr-2"
-          >
-            Cancelar
-          </button>
-          {isEditing && onDeleteOrder && (
-            <button
-              onClick={onDeleteOrder}
-              className="bg-yellow-700 px-4 py-2 rounded mr-2"
-              title="Eliminar pedido"
-            >
-              Eliminar
-            </button>
+      {/* Sección de Preferencias */}
+      <div className="mt-4">
+        <label className="text-white block mb-2">Preferencias:</label>
+        <div className="flex gap-2">
+          {["(MS)", "(S/S)", "(BH)", "(PH)"].map(
+            (preference) => (
+              <button
+                key={preference}
+                onClick={() => handlePreferenceToggle(preference)}
+                className={`px-3 py-1 rounded ${
+                  order.preferences.includes(preference)
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-500 text-gray-200"
+                }`}
+              >
+                {preference}
+              </button>
+            )
           )}
-          <button
-            onClick={handleSave}
-            disabled={!isValidOrder}
-            className={`px-4 py-2 rounded ${
-              isValidOrder
-                ? "bg-green-700 hover:bg-green-600"
-                : "bg-gray-500 cursor-not-allowed"
-            }`}
-          >
-            {isEditing ? "Actualizar" : "Agregar"}
-          </button>
         </div>
       </div>
+
+      <div className="flex justify-end mt-4 gap-4">
+        <button
+          onClick={handleClose}
+          className="bg-red-500 px-4 py-2 rounded mr-2"
+        >
+          Cancelar
+        </button>
+        {isEditing && onDeleteOrder && (
+          <button
+            onClick={onDeleteOrder}
+            className="bg-yellow-700 px-4 py-2 rounded mr-2"
+            title="Eliminar pedido"
+          >
+            Eliminar
+          </button>
+        )}
+        <button
+          onClick={handleSave}
+          disabled={!isValidOrder}
+          className={`px-4 py-2 rounded ${
+            isValidOrder
+              ? "bg-green-700 hover:bg-green-600"
+              : "bg-gray-500 cursor-not-allowed"
+          }`}
+        >
+          {isEditing ? "Actualizar" : "Agregar"}
+        </button>
+      </div>
     </div>
-  );
+  </div>
+);
+
 }

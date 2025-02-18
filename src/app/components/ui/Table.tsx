@@ -9,6 +9,7 @@ interface Order {
   paid: boolean;
   delivered: boolean;
   phone: boolean;
+  preferences: string[];
 }
 
 interface TableProps {
@@ -57,8 +58,8 @@ export function Table({
   return (
     <div className="overflow-x-auto rounded-lg">
       {title && <h2 className="text-xl font-bold mb-4">{title}</h2>}
-      <table className="min-w-full divide-y divide-gray-200 bg-white dark:bg-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-800 ">
+      <table className="min-w-full table-auto border-collapse">
+        <thead className="bg-gray-50 dark:bg-gray-800">
           <tr>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Pollos
@@ -76,6 +77,9 @@ export function Table({
               Pagado
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              Preferencias
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               Editar
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -87,10 +91,13 @@ export function Table({
           {orders.map((order, index) => (
             <tr
               key={index}
-              className="hover:bg-gray-100 dark:hover:bg-gray-600 "
+              className="hover:bg-gray-100 dark:hover:bg-gray-600"
             >
-              <td colSpan={7} className="p-0">
-                <div className={`${getBorderClass(order, currentTime)} flex`}>
+              <td
+                colSpan={8}
+                className={`p-0 ${getBorderClass(order, currentTime)}`}
+              >
+                <div className="flex">
                   <div className="flex-1 px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     {order.chickens}
                   </div>
@@ -105,6 +112,9 @@ export function Table({
                   </div>
                   <div className="flex-1 px-6 py-4 text-sm">
                     {order.paid ? "✅" : "❌"}
+                  </div>
+                  <div className="flex-1 px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                    {order.preferences.join(", ")}
                   </div>
                   <div className="flex-1 px-6 py-4 text-sm">
                     <button
