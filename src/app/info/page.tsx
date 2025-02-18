@@ -1,7 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ChevronLeftIcon } from "@heroicons/react/20/solid";
+import SuccesAlert from "../components/alerts/SuccesAlert";
+import ErrorAlert from "../components/alerts/ErrorAlert";
 
 interface JSONEntry {
   key: string;
@@ -11,6 +13,20 @@ interface JSONEntry {
 export default function InfoPage() {
   const [jsonEntries, setJsonEntries] = useState<JSONEntry[]>([]);
   const [selectedEntry, setSelectedEntry] = useState<JSONEntry | null>(null);
+  const [editedContent, setEditedContent] = useState("");
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+
+  // Función para parsear la fecha en formato dd-mm-yyyy
+  const parseDate = (dateStr: string): Date | null => {
+    const parts = dateStr.split("-");
+    if (parts.length !== 3) return null;
+    const day = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10) - 1; // meses de 0 a 11
+    const year = parseInt(parts[2], 10);
+    return new Date(year, month, day);
+  };
 
   // Cargar todos los JSON desde localStorage
   useEffect(() => {
@@ -24,20 +40,62 @@ export default function InfoPage() {
             const parsed = JSON.parse(value);
             entries.push({ key, content: parsed });
           }
-        } catch (error) {
+        } catch {
           // Si no es un JSON válido, lo omitimos.
-          console.error(`Error parsing JSON for key "${key}":`, error);
+          console.error(`Error parsing JSON for key "${key}":`);
         }
       }
     }
+    entries.sort((a, b) => {
+      const dateA = parseDate(a.key);
+      const dateB = parseDate(b.key);
+      if (dateA && dateB) {
+        return dateB.getTime() - dateA.getTime();
+      }
+      return dateA ? -1 : 1;
+    });
     setJsonEntries(entries);
   }, []);
 
+  // Actualizar el contenido editado al cambiar la selección
+  useEffect(() => {
+    if (selectedEntry) {
+      setEditedContent(JSON.stringify(selectedEntry.content, null, 2));
+    }
+  }, [selectedEntry]);
+
+  // Autoajuste de la altura del textarea según el contenido
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [editedContent]);
   const handleDelete = (key: string) => {
     localStorage.removeItem(key);
     setJsonEntries((prev) => prev.filter((entry) => entry.key !== key));
     if (selectedEntry && selectedEntry.key === key) {
       setSelectedEntry(null);
+    }
+  };
+
+  const handleSave = () => {
+    try {
+      const parsed = JSON.parse(editedContent);
+      localStorage.setItem(selectedEntry!.key, editedContent);
+      setJsonEntries((prev) =>
+        prev.map((entry) =>
+          entry.key === selectedEntry!.key
+            ? { ...entry, content: parsed }
+            : entry
+        )
+      );
+      setSelectedEntry({ key: selectedEntry!.key, content: parsed });
+      setShowSuccessAlert(true);
+      setTimeout(() => setShowSuccessAlert(false), 3000);
+    } catch {
+      setShowErrorAlert(true);
+      setTimeout(() => setShowErrorAlert(false), 3000);
     }
   };
 
@@ -47,6 +105,11 @@ export default function InfoPage() {
         <Link href="/" className="text-blue-500 hover:underline flex">
           <ChevronLeftIcon className="h-6 w-6" /> Volver a la página principal
         </Link>
+
+        {/* Alerta de éxito */}
+        {showSuccessAlert && <SuccesAlert />}
+        {/* Alerta de éxito */}
+        {showErrorAlert && <ErrorAlert />}
         <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-6">
           JSON Data Viewer
         </h1>
@@ -82,16 +145,27 @@ export default function InfoPage() {
                 <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
                   {selectedEntry.key}
                 </h2>
-                <button
-                  onClick={() => handleDelete(selectedEntry.key)}
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                >
-                  Delete
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleSave}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                  >
+                    Save ✨
+                  </button>
+                  <button
+                    onClick={() => handleDelete(selectedEntry.key)}
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                  >
+                    Delete 🗑️
+                  </button>
+                </div>
               </div>
-              <pre className="bg-gray-50 dark:bg-gray-700 p-4 rounded text-sm text-gray-800 dark:text-gray-100 overflow-auto">
-                {JSON.stringify(selectedEntry.content, null, 2)}
-              </pre>
+              <textarea
+                ref={textareaRef}
+                value={editedContent}
+                onChange={(e) => setEditedContent(e.target.value)}
+                className="w-full bg-gray-50 dark:bg-gray-700 p-4 rounded text-sm text-gray-800 dark:text-gray-100 overflow-hidden font-mono resize-none"
+              />
             </div>
           ) : (
             <div className="text-gray-600 dark:text-gray-300">
