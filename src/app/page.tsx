@@ -92,20 +92,19 @@ export default function Home() {
       return a.delivered ? 1 : -1;
     });
   };
-  
+
   const saveOrder = (order: Order) => {
     let updatedOrders: Order[];
-  
+
     if (orderToEdit && editIndex !== null) {
       updatedOrders = [...orders];
       updatedOrders[editIndex] = order;
     } else {
       updatedOrders = [...orders, order];
     }
-  
+
     setOrders(sortOrdersByTime(updatedOrders));
   };
-  
 
   const deleteOrder = () => {
     if (editIndex !== null) {
@@ -151,8 +150,6 @@ export default function Home() {
     setOrders(sortedOrders);
     localStorage.setItem(dateKey, JSON.stringify(sortedOrders));
   };
-  
-
 
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
@@ -167,7 +164,7 @@ export default function Home() {
               <InformationCircleIcon className="h-8 w-8 text-blue-500 cursor-pointer" />
             </Link>
           </h1>
-  
+
           <div className="flex flex-col gap-4">
             <button
               onClick={openAddModal}
@@ -182,7 +179,7 @@ export default function Home() {
             />
           </div>
         </div>
-  
+
         <div className="col-span-1 h-auto md:h-screen border-t-4 md:border-t-0 md:border-l-4 border-gray-700 dark:border-gray-700 bg-gray-800 dark:bg-gray-800">
           <Details
             totalChickens={orders.reduce(
@@ -202,15 +199,15 @@ export default function Home() {
           />
         </div>
       </div>
-  
+
       <OrderModal
         isOpen={isModalOpen}
         onClose={closeModal}
         onSaveOrder={saveOrder}
         onDeleteOrder={orderToEdit ? deleteOrder : undefined}
         initialOrder={orderToEdit || undefined}
+        pueblo={currentDayTitle} // PASAMOS EL NOMBRE DEL PUEBLO
       />
     </main>
   );
-  
 }
