@@ -11,6 +11,7 @@ export interface Order {
   phone: boolean;
   preferences: string[]; // Opcional: preferencias seleccionadas
   blacklisted?: boolean; // Opcional: si el cliente está en lista negra
+  deleted?: boolean; // Nueva propiedad para marcar eliminados
 }
 
 // Props para el modal unificado
@@ -67,6 +68,7 @@ export function OrderModal({
       phone: false,
       preferences: [],
       blacklisted: false,
+      deleted: false, // Por defecto, no eliminado
     }
   );
 
@@ -90,6 +92,7 @@ export function OrderModal({
         phone: false,
         preferences: [],
         blacklisted: false,
+        deleted: false,
       });
     }
     // Reseteamos el flag al abrir el modal
@@ -207,6 +210,7 @@ export function OrderModal({
       phone: false,
       preferences: [],
       blacklisted: false,
+      deleted: false,
     });
     onClose();
   };

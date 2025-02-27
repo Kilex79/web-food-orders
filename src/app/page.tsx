@@ -23,6 +23,13 @@ export default function Home() {
     6: "Santañí",
   };
 
+  const prices = {
+    chicken: 11,
+    halfChicken: 6,
+    potatoes: 2,
+    halfPotatoes: 1,
+  };
+
   const today = new Date();
   const currentDay = today.getDay();
   const currentDayTitle = dayTitles[currentDay];
@@ -57,12 +64,14 @@ export default function Home() {
   }, [dateKey]);
 
   useEffect(() => {
-    if (orders.length > 0) {
-      const totalChickens = orders.reduce(
+    // Calculamos solo con pedidos activos (no eliminados)
+    const activeOrders = orders.filter(order => !order.deleted);
+    if (activeOrders.length > 0) {
+      const totalChickens = activeOrders.reduce(
         (total, order) => total + Number(order.chickens),
         0
       );
-      const totalPotatoes = orders.reduce(
+      const totalPotatoes = activeOrders.reduce(
         (total, order) => total + Number(order.potatoes),
         0
       );
@@ -71,7 +80,7 @@ export default function Home() {
       const dailySummary = {
         title: currentDayTitle,
         date: `${dateKey} - ${weekday}`,
-        orders: orders,
+        orders: orders, // guardamos todos, incluso los eliminados
         chickensSold: totalChickens,
         potatoesSold: totalPotatoes,
       };
@@ -106,9 +115,11 @@ export default function Home() {
     setOrders(sortOrdersByTime(updatedOrders));
   };
 
+  // En lugar de eliminar, marcamos el pedido como eliminado
   const deleteOrder = () => {
     if (editIndex !== null) {
-      const updatedOrders = orders.filter((_, index) => index !== editIndex);
+      const updatedOrders = [...orders];
+      updatedOrders[editIndex].deleted = true;
       setOrders(updatedOrders);
       closeModal();
     }
@@ -136,20 +147,13 @@ export default function Home() {
     const updatedOrders = [...orders];
     updatedOrders[index].delivered = !updatedOrders[index].delivered;
 
-    const sortedOrders = [...updatedOrders].sort((a, b) => {
-      if (a.delivered === b.delivered) {
-        const [hoursA, minutesA] = a.time.split(":").map(Number);
-        const [hoursB, minutesB] = b.time.split(":").map(Number);
-        const timeA = new Date().setHours(hoursA, minutesA, 0, 0);
-        const timeB = new Date().setHours(hoursB, minutesB, 0, 0);
-        return timeA - timeB;
-      }
-      return a.delivered ? 1 : -1;
-    });
-
+    const sortedOrders = sortOrdersByTime(updatedOrders);
     setOrders(sortedOrders);
     localStorage.setItem(dateKey, JSON.stringify(sortedOrders));
   };
+
+  // Filtramos para mostrar solo los pedidos activos
+  const activeOrders = orders.filter(order => !order.deleted);
 
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
@@ -173,7 +177,8 @@ export default function Home() {
               Añadir Pedido
             </button>
             <Table
-              orders={orders}
+              orders={orders} // La tabla se encargará de no mostrar los eliminados
+              prices={prices}
               onEditOrder={openEditModal}
               onToggleDelivered={toggleDelivered}
             />
@@ -182,18 +187,18 @@ export default function Home() {
 
         <div className="col-span-1 h-auto md:h-screen border-t-4 md:border-t-0 md:border-l-4 border-gray-700 dark:border-gray-700 bg-gray-800 dark:bg-gray-800">
           <Details
-            totalChickens={orders.reduce(
+            totalChickens={activeOrders.reduce(
               (total, order) => total + Number(order.chickens),
               0
             )}
-            totalPotatoes={orders.reduce(
+            totalPotatoes={activeOrders.reduce(
               (total, order) => total + Number(order.potatoes),
               0
             )}
-            deliveredChickens={orders
+            deliveredChickens={activeOrders
               .filter((order) => order.delivered)
               .reduce((total, order) => total + Number(order.chickens), 0)}
-            deliveredPotatoes={orders
+            deliveredPotatoes={activeOrders
               .filter((order) => order.delivered)
               .reduce((total, order) => total + Number(order.potatoes), 0)}
           />
