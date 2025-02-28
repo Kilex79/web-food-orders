@@ -10,7 +10,7 @@ export interface Order {
   delivered: boolean;
   phone: boolean;
   preferences: string[]; // Opcional: preferencias seleccionadas
-  blacklisted?: boolean; // Opcional: si el cliente está en lista negra
+  blacklisted: boolean; // Opcional: si el cliente está en lista negra
   deleted?: boolean; // Nueva propiedad para marcar eliminados
 }
 
@@ -24,8 +24,14 @@ interface OrderModalProps {
   pueblo: string; // NUEVA: nombre del pueblo a usar para clientes
 }
 
-// Función para normalizar strings (elimina acentos y caracteres especiales, y pasa a minúsculas)
-const normalizeString = (str: string) => {
+// Nuevo tipo para almacenar clientes en localStorage
+interface Client {
+  name: string;
+  blacklisted: boolean;
+}
+
+// Función para normalizar strings (usa valor por defecto para evitar undefined)
+const normalizeString = (str: string = "") => {
   return str
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "") // elimina diacríticos
@@ -68,16 +74,17 @@ export function OrderModal({
       phone: false,
       preferences: [],
       blacklisted: false,
-      deleted: false, // Por defecto, no eliminado
+      deleted: false,
     }
   );
 
   // Estado para las sugerencias de nombres
   const [suggestions, setSuggestions] = useState<string[]>([]);
   // Estado para controlar si ya se ha seleccionado una sugerencia
-  const [hasSelectedSuggestion, setHasSelectedSuggestion] = useState<boolean>(false);
+  const [hasSelectedSuggestion, setHasSelectedSuggestion] =
+    useState<boolean>(false);
 
-  // Actualiza el estado cuando cambie el pedido inicial o se abra el modal
+  // Al abrir el modal o cambiar el pedido inicial, se reinicia el estado
   useEffect(() => {
     if (initialOrder) {
       setOrder(initialOrder);
@@ -95,19 +102,18 @@ export function OrderModal({
         deleted: false,
       });
     }
-    // Reseteamos el flag al abrir el modal
+    // Reiniciamos el flag de sugerencias
     setHasSelectedSuggestion(false);
   }, [initialOrder, isOpen]);
 
-  // Actualiza las sugerencias cuando el nombre cambie,
-  // pero solo si no se ha seleccionado una sugerencia previamente
+  // Efecto para actualizar las sugerencias según el nombre escrito
   useEffect(() => {
     if (hasSelectedSuggestion) {
       setSuggestions([]);
       return;
     }
     const clientsRaw = localStorage.getItem("clients");
-    let clients: { [key: string]: string[] } = {};
+    let clients: { [key: string]: Client[] } = {};
     if (clientsRaw) {
       try {
         clients = JSON.parse(clientsRaw);
@@ -116,18 +122,48 @@ export function OrderModal({
       }
     }
     const clientKey = normalizeString(pueblo);
-    const names: string[] = clients[clientKey] || [];
+    // Extraemos los nombres de cada cliente
+    const names: string[] = (clients[clientKey] || []).map(
+      (client) => client.name
+    );
     const inputNormalized = normalizeString(order.name);
-    // Se filtra comparando la versión normalizada de cada nombre
     const filtered = names.filter(
-      (name) => normalizeString(name).startsWith(inputNormalized) && inputNormalized !== ""
+      (name) =>
+        normalizeString(name).startsWith(inputNormalized) &&
+        inputNormalized !== ""
     );
     setSuggestions(filtered);
   }, [order.name, pueblo, hasSelectedSuggestion]);
 
+  // Efecto para detectar si el cliente ya existe y sincronizar el checkbox "Lista Negra"
+  useEffect(() => {
+    const clientsRaw = localStorage.getItem("clients");
+    let clients: { [key: string]: Client[] } = {};
+    if (clientsRaw) {
+      try {
+        clients = JSON.parse(clientsRaw);
+      } catch (error) {
+        console.error("Error al parsear clients:", error);
+      }
+    }
+    const clientKey = normalizeString(pueblo);
+    const plainName = order.name.replace("🏴", "").trim();
+    const formattedName = toTitleCase(plainName);
+    const existingClient = (clients[clientKey] || []).find(
+      (client) => client.name === formattedName
+    );
+    // Si existe y difiere del valor actual del checkbox, se actualiza
+    if (existingClient && order.blacklisted !== existingClient.blacklisted) {
+      setOrder((prev) => ({
+        ...prev,
+        blacklisted: existingClient.blacklisted,
+      }));
+    }
+  }, [order.name, pueblo]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    // Si el usuario modifica manualmente el input, reiniciamos el flag
+    // Si el usuario modifica manualmente el input de nombre, reiniciamos el flag de sugerencia
     if (name === "name") {
       setHasSelectedSuggestion(false);
     }
@@ -222,7 +258,7 @@ export function OrderModal({
   const handleSave = () => {
     if (isValidOrder) {
       const clientsRaw = localStorage.getItem("clients");
-      let clients: { [key: string]: string[] } = {};
+      let clients: { [key: string]: Client[] } = {};
       if (clientsRaw) {
         try {
           clients = JSON.parse(clientsRaw);
@@ -231,16 +267,34 @@ export function OrderModal({
         }
       }
       const clientKey = normalizeString(pueblo);
-      // Convertir el nombre a Title Case para guardarlo en el JSON
-      const formattedName = toTitleCase(order.name);
-      // Actualizamos el order para que también se guarde con el formato deseado
-      const updatedOrder = { ...order, name: formattedName };
+      // Se elimina el emoji de lista negra para formatear el nombre de forma consistente
+      const plainName = order.name.replace("🏴", "").trim();
+      const formattedName = toTitleCase(plainName);
+
+      // Se crea el objeto cliente
+      const clientObj: Client = {
+        name: formattedName,
+        blacklisted: order.blacklisted || false,
+      };
+
       if (!clients[clientKey]) {
         clients[clientKey] = [];
       }
-      if (!clients[clientKey].includes(formattedName)) {
-        clients[clientKey].push(formattedName);
+      // Si el cliente ya existe, actualizamos su propiedad blacklisted; de lo contrario, lo agregamos
+      const existingIndex = clients[clientKey].findIndex(
+        (client) => client.name === formattedName
+      );
+      if (existingIndex !== -1) {
+        clients[clientKey][existingIndex].blacklisted = order.blacklisted;
+      } else {
+        clients[clientKey].push(clientObj);
       }
+      // Se añade el emoji al nombre para visualización si está en lista negra
+      const savedName = order.blacklisted
+        ? `${formattedName} 🏴`
+        : formattedName;
+      const updatedOrder = { ...order, name: savedName };
+
       localStorage.setItem("clients", JSON.stringify(clients));
       onSaveOrder(updatedOrder);
       handleClose();
@@ -257,6 +311,29 @@ export function OrderModal({
           <h2 className="text-xl font-bold text-white">
             {isEditing ? "Editar Pedido" : "Agregar Pedido"}
           </h2>
+          {/* Checkbox para Lista Negra */}
+          {/*<label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="blacklisted"
+              checked={order.blacklisted}
+              onChange={handleChange}
+              className="w-5 h-5"
+            />
+            <span>🏴</span>
+          </label>*/}
+          <div className="form-control">
+            <label className="cursor-pointer label">
+              <input
+                type="checkbox"
+                name="blacklisted"
+                checked={order.blacklisted}
+                onChange={handleChange}
+                className="w-5 h-5 checkbox checkbox-error"
+              />
+              <span>🏴</span>
+            </label>
+          </div>
         </div>
         <div className="relative">
           <input

@@ -10,7 +10,7 @@ interface Order {
   delivered: boolean;
   phone: boolean;
   preferences: string[];
-  blacklisted?: boolean;
+  blacklisted: boolean;
   deleted?: boolean; // Nueva propiedad para marcar eliminados
 }
 
@@ -75,8 +75,8 @@ export function Table({
         <table className="table table-xl w-full text-lg">
           <thead>
             <tr className="text-lg bg-gray-800 border-t-4 border-l-4 border-r-4 border-gray-500 text-white">
-              <th>Pollos</th>
-              <th>Patatas</th>
+              <th className="w-4">Pollos</th>
+              <th className="w-4">Patatas</th>
               <th>Hora</th>
               <th>Nombre</th>
               <th>Pagado</th>
@@ -106,7 +106,7 @@ export function Table({
                   <td>{order.potatoes}</td>
                   <td>{order.time}</td>
                   <td>
-                    {order.blacklisted ? "(🏴)" : ""} {order.name}{" "}
+                    {order.name}{" "}
                     {order.phone ? " (📞)" : ""}
                   </td>
                   <td>{order.paid ? "✅" : "❌"}</td>

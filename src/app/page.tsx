@@ -157,9 +157,9 @@ export default function Home() {
 
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="col-span-1 md:col-span-3 p-4 md:p-8 overflow-auto">
-          <h1 className="relative text-4xl font-bold text-gray-100 dark:text-gray-100 mb-4 border-4 border-gray-700 dark:border-gray-700 rounded-lg p-4">
+          <h1 className="relative text-2xl md:text-4xl font-bold text-gray-100 mb-4 border-4 border-gray-700 rounded-lg p-4">
             <span className="block text-center w-full">{currentDayTitle}</span>
             <Link
               href="/info"
