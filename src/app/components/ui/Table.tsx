@@ -141,46 +141,61 @@ export function Table({
       </div>
 
       {/* Vista de cards para dispositivos móviles */}
-      <div className="block sm:hidden space-y-4 text-xs">
+      <div className="block sm:hidden space-y-2 text-xs">
         {orders.map((order, index) => {
           if (order.deleted) return null;
           return (
             <div
               key={index}
-              className={`card shadow-lg p-4 ${getBorderClass(
+              className={`card shadow-lg p-2 ${getBorderClass(
                 order,
                 currentTime
-              )}`}
+              )} ${
+                order.delivered
+                  ? "bg-gray-700 border-gray-500 border-4 opacity-35"
+                  : ""
+              }`}
             >
               <div className="flex justify-between items-center border-b pb-2 mb-2">
                 <span className="text-sm font-semibold">
-                  {order.name}{" "}
-                  {order.phone && <span>(📞)</span>}
+                  {order.name} {order.phone && <span>(📞)</span>}
                 </span>
-                <button
-                  onClick={() => onEditOrder(order, index)}
-                  title="Editar pedido"
-                  className="text-blue-500 hover:text-blue-700"
-                >
-                  <PencilSquareIcon className="w-6 h-6" />
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEditOrder(order, index)}
+                    title="Editar pedido"
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    <PencilSquareIcon className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={() => onToggleDelivered(index)}
+                    className={` w-36 py-2 text-white font-bold rounded transition-colors ${
+                      order.delivered
+                        ? "bg-green-500 hover:bg-green-600"
+                        : "bg-gray-500 hover:bg-gray-600"
+                    }`}
+                  >
+                    {order.delivered ? "Entregado ✔️" : "No entregado ❌"}
+                  </button>
+                </div>
               </div>
-              <div className="grid grid-cols-2 gap-y-2">
+              <div className=" flex flex-wrap gap-2">
                 <p>
-                  <strong>Pollos:</strong> {order.chickens}
+                  <strong>🐔:</strong> {order.chickens}
                 </p>
                 <p>
-                  <strong>Patatas:</strong> {order.potatoes}
+                  <strong>🥔:</strong> {order.potatoes}
                 </p>
                 <p className="col-span-2">
-                  <strong>Hora:</strong> {order.time} 
+                  <strong>Hora:</strong> {order.time}
                 </p>
                 <p>
                   <strong>Pagado:</strong> {order.paid ? "✅" : "❌"}
                 </p>
                 <p>
                   <strong>Preferencias:</strong>{" "}
-                  {order.preferences?.join(", ") || "Ninguna"}
+                  {order.preferences?.join(", ") || "-"}
                 </p>
                 <p className="col-span-2">
                   <strong>Precio:</strong>{" "}
@@ -189,18 +204,7 @@ export function Table({
                   €
                 </p>
               </div>
-              <div className="mt-3">
-                <button
-                  onClick={() => onToggleDelivered(index)}
-                  className={`w-full py-2 text-white font-bold rounded transition-colors ${
-                    order.delivered
-                      ? "bg-green-500 hover:bg-green-600"
-                      : "bg-gray-500 hover:bg-gray-600"
-                  }`}
-                >
-                  {order.delivered ? "Entregado ✔️" : "No entregado ❌"}
-                </button>
-              </div>
+              <div className="mt-3"></div>
             </div>
           );
         })}
