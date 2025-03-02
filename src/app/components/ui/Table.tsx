@@ -67,12 +67,10 @@ export function Table({
 
   return (
     <>
-      <div
-        className="overflow-x-auto rounded-md"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {title && <h2 className="text-xl font-bold mb-4">{title}</h2>}
-        <table className="table table-xl w-full text-lg">
+      {title && <h2 className="text-xl font-bold mb-4">{title}</h2>}
+      {/* Vista de tabla para pantallas medianas y grandes */}
+      <div className="hidden sm:block">
+        <table className="table table-compact w-full text-sm md:text-lg">
           <thead>
             <tr className="text-lg bg-gray-800 border-t-4 border-l-4 border-r-4 border-gray-500 text-white">
               <th className="w-4">Pollos</th>
@@ -88,7 +86,6 @@ export function Table({
           </thead>
           <tbody>
             {orders.map((order, index) => {
-              // Si el pedido está marcado como eliminado, no se renderiza
               if (order.deleted) return null;
               return (
                 <tr
@@ -98,7 +95,7 @@ export function Table({
                     currentTime
                   )} hover:bg-slate-600 ${
                     order.delivered
-                      ? "bg-gray-700 border-gray-500 border-4 opacity-35 "
+                      ? "bg-gray-700 border-gray-500 border-4 opacity-35"
                       : ""
                   }`}
                 >
@@ -106,14 +103,14 @@ export function Table({
                   <td>{order.potatoes}</td>
                   <td>{order.time}</td>
                   <td>
-                    {order.name}{" "}
-                    {order.phone ? " (📞)" : ""}
+                    {order.name} {order.phone ? " (📞)" : ""}
                   </td>
                   <td>{order.paid ? "✅" : "❌"}</td>
                   <td>{order.preferences?.join(", ") || ""}</td>
                   <td>
                     {order.chickens * prices.chicken +
-                      order.potatoes * prices.potatoes} €
+                      order.potatoes * prices.potatoes}{" "}
+                    €
                   </td>
                   <td>
                     <button
@@ -142,11 +139,72 @@ export function Table({
           </tbody>
         </table>
       </div>
-      <style jsx global>{`
-        .overflow-x-auto::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
+
+      {/* Vista de cards para dispositivos móviles */}
+      <div className="block sm:hidden space-y-4 text-xs">
+        {orders.map((order, index) => {
+          if (order.deleted) return null;
+          return (
+            <div
+              key={index}
+              className={`card shadow-lg p-4 ${getBorderClass(
+                order,
+                currentTime
+              )}`}
+            >
+              <div className="flex justify-between items-center border-b pb-2 mb-2">
+                <span className="text-sm font-semibold">
+                  {order.name}{" "}
+                  {order.phone && <span>(📞)</span>}
+                </span>
+                <button
+                  onClick={() => onEditOrder(order, index)}
+                  title="Editar pedido"
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  <PencilSquareIcon className="w-6 h-6" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-y-2">
+                <p>
+                  <strong>Pollos:</strong> {order.chickens}
+                </p>
+                <p>
+                  <strong>Patatas:</strong> {order.potatoes}
+                </p>
+                <p className="col-span-2">
+                  <strong>Hora:</strong> {order.time} 
+                </p>
+                <p>
+                  <strong>Pagado:</strong> {order.paid ? "✅" : "❌"}
+                </p>
+                <p>
+                  <strong>Preferencias:</strong>{" "}
+                  {order.preferences?.join(", ") || "Ninguna"}
+                </p>
+                <p className="col-span-2">
+                  <strong>Precio:</strong>{" "}
+                  {order.chickens * prices.chicken +
+                    order.potatoes * prices.potatoes}{" "}
+                  €
+                </p>
+              </div>
+              <div className="mt-3">
+                <button
+                  onClick={() => onToggleDelivered(index)}
+                  className={`w-full py-2 text-white font-bold rounded transition-colors ${
+                    order.delivered
+                      ? "bg-green-500 hover:bg-green-600"
+                      : "bg-gray-500 hover:bg-gray-600"
+                  }`}
+                >
+                  {order.delivered ? "Entregado ✔️" : "No entregado ❌"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </>
   );
 }
