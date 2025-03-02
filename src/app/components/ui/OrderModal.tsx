@@ -84,6 +84,17 @@ export function OrderModal({
   const [hasSelectedSuggestion, setHasSelectedSuggestion] =
     useState<boolean>(false);
 
+  // Función para actualizar campos numéricos (chickens o potatoes)
+  const updateField = (field: "chickens" | "potatoes", delta: number) => {
+    setOrder((prevOrder) => {
+      const newValue = Number((prevOrder[field] + delta).toFixed(1));
+      return {
+        ...prevOrder,
+        [field]: newValue < 0 ? 0 : newValue, // Evitar valores negativos
+      };
+    });
+  };
+
   // Al abrir el modal o cambiar el pedido inicial, se reinicia el estado
   useEffect(() => {
     if (initialOrder) {
@@ -311,17 +322,6 @@ export function OrderModal({
           <h2 className="text-xl font-bold text-white">
             {isEditing ? "Editar Pedido" : "Agregar Pedido"}
           </h2>
-          {/* Checkbox para Lista Negra */}
-          {/*<label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              name="blacklisted"
-              checked={order.blacklisted}
-              onChange={handleChange}
-              className="w-5 h-5"
-            />
-            <span>🏴</span>
-          </label>*/}
           <div className="form-control">
             <label className="cursor-pointer label">
               <input
@@ -359,29 +359,47 @@ export function OrderModal({
             </ul>
           )}
         </div>
+        {/* Se reemplaza el input numérico por una vista de texto con botones */}
         <div className="mb-2">
           <label className="text-white block mb-1">Pollos 🐔</label>
-          <input
-            type="number"
-            name="chickens"
-            min="0"
-            step="0.5"
-            value={order.chickens}
-            onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700 text-white"
-          />
+          <div className="flex items-center">
+            <button
+              onClick={() => updateField("chickens", -0.5)}
+              className="bg-red-500 text-white px-2 py-1 rounded"
+            >
+              -0.5
+            </button>
+            <span className="mx-2 text-white w-12 text-center bg-gray-700 rounded">
+              {order.chickens}
+            </span>
+
+            <button
+              onClick={() => updateField("chickens", 0.5)}
+              className="bg-blue-500 text-white px-2 py-1 rounded"
+            >
+              +0.5
+            </button>
+          </div>
         </div>
         <div className="mb-2">
           <label className="text-white block mb-1">Patatas 🥔</label>
-          <input
-            type="number"
-            name="potatoes"
-            min="0"
-            step="0.5"
-            value={order.potatoes}
-            onChange={handleChange}
-            className="w-full p-2 rounded bg-gray-700 text-white"
-          />
+          <div className="flex items-center">
+            <button
+              onClick={() => updateField("potatoes", -0.5)}
+              className="bg-red-500 text-white px-2 py-1 rounded"
+            >
+              -0.5
+            </button>
+            <span className="mx-2 text-white w-12 text-center bg-gray-700 rounded">
+              {order.potatoes}
+            </span>
+            <button
+              onClick={() => updateField("potatoes", 0.5)}
+              className="bg-blue-500 text-white px-2 py-1 rounded"
+            >
+              +0.5
+            </button>
+          </div>
         </div>
         <input
           type="time"
