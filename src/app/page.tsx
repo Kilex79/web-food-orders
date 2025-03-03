@@ -13,6 +13,10 @@ export default function Home() {
   const [orderToEdit, setOrderToEdit] = useState<Order | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
 
+  // Estados para Horno P y Horno PTT
+  const [pollosHorno, setPollosHorno] = useState(0);
+  const [patatasHorno, setPatatasHorno] = useState(0);
+
   const dayTitles: { [key: number]: string } = {
     0: "Santa María",
     1: "Manacor",
@@ -43,12 +47,15 @@ export default function Home() {
 
   const dateKey = getDateKey();
 
-  const loadOrdersFromStorage = () => {
+  // Cargar datos del localStorage: orders, pollosHorno y patatasHorno
+  const loadDataFromStorage = () => {
     const storedData = localStorage.getItem(dateKey);
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData);
         if (parsedData.orders) {
+          setPollosHorno(parsedData.pollosHorno || 0);
+          setPatatasHorno(parsedData.patatasHorno || 0);
           return parsedData.orders;
         }
       } catch (error) {
@@ -59,12 +66,12 @@ export default function Home() {
   };
 
   useEffect(() => {
-    const storedOrders = loadOrdersFromStorage();
+    const storedOrders = loadDataFromStorage();
     setOrders(storedOrders);
   }, [dateKey]);
 
   useEffect(() => {
-    // Calculamos solo con pedidos activos (no eliminados)
+    // Consideramos solo los pedidos activos (no eliminados)
     const activeOrders = orders.filter(order => !order.deleted);
     if (activeOrders.length > 0) {
       const totalChickens = activeOrders.reduce(
@@ -80,14 +87,16 @@ export default function Home() {
       const dailySummary = {
         title: currentDayTitle,
         date: `${dateKey} - ${weekday}`,
-        orders: orders, // guardamos todos, incluso los eliminados
+        orders: orders, // se guardan todos, incluso los eliminados
         chickensSold: totalChickens,
         potatoesSold: totalPotatoes,
+        pollosHorno: pollosHorno,
+        patatasHorno: patatasHorno,
       };
 
       localStorage.setItem(dateKey, JSON.stringify(dailySummary));
     }
-  }, [orders, dateKey]);
+  }, [orders, pollosHorno, patatasHorno, dateKey]);
 
   const sortOrdersByTime = (orders: Order[]) => {
     return [...orders].sort((a, b) => {
@@ -152,7 +161,7 @@ export default function Home() {
     localStorage.setItem(dateKey, JSON.stringify(sortedOrders));
   };
 
-  // Filtramos para mostrar solo los pedidos activos
+  // Filtrar para mostrar solo pedidos activos
   const activeOrders = orders.filter(order => !order.deleted);
 
   return (
@@ -201,6 +210,10 @@ export default function Home() {
             deliveredPotatoes={activeOrders
               .filter((order) => order.delivered)
               .reduce((total, order) => total + Number(order.potatoes), 0)}
+            hornoP={pollosHorno}
+            hornoPTT={patatasHorno}
+            onHornoPChange={setPollosHorno}
+            onHornoPTTChange={setPatatasHorno}
           />
         </div>
       </div>

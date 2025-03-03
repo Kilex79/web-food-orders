@@ -1,11 +1,14 @@
 "use client";
-import { useState } from "react";
 
 interface DetailsProps {
   totalChickens: number;
   totalPotatoes: number;
   deliveredChickens: number;
   deliveredPotatoes: number;
+  hornoP: number;
+  hornoPTT: number;
+  onHornoPChange: (value: number) => void;
+  onHornoPTTChange: (value: number) => void;
 }
 
 export default function Details({
@@ -13,10 +16,11 @@ export default function Details({
   totalPotatoes,
   deliveredChickens,
   deliveredPotatoes,
+  hornoP,
+  hornoPTT,
+  onHornoPChange,
+  onHornoPTTChange,
 }: DetailsProps) {
-  const [hornoP, setHornoP] = useState(0);
-  const [hornoPTT, setHornoPTT] = useState(0);
-
   return (
     <div className="p-4 space-y-4">
       {/* Grupo 1: Totales */}
@@ -38,7 +42,7 @@ export default function Details({
           {[1, 5, 6, 12].map((num) => (
             <button
               key={num}
-              onClick={() => setHornoP(hornoP + num)}
+              onClick={() => onHornoPChange(hornoP + num)}
               className="flex-1 min-w-[80px] h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200"
             >
               +{num}
@@ -49,7 +53,7 @@ export default function Details({
           {[1, 5, 6, 12].map((num) => (
             <button
               key={num}
-              onClick={() => setHornoP(hornoP - num)}
+              onClick={() => onHornoPChange(hornoP - num)}
               className="flex-1 min-w-[80px] h-12 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-200"
             >
               -{num}
@@ -65,19 +69,25 @@ export default function Details({
         </h1>
         <div className="flex flex-wrap gap-4 mb-6">
           <button
-            onClick={() => setHornoPTT(hornoPTT + 10)}
+            onClick={() => onHornoPTTChange(hornoPTT + 1)}
+            className="flex-1 min-w-[80px] h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200"
+          >
+            +1
+          </button>
+          <button
+            onClick={() => onHornoPTTChange(hornoPTT + 10)}
             className="flex-1 min-w-[80px] h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-200"
           >
             +10
           </button>
           <button
-            onClick={() => setHornoPTT(hornoPTT - 10)}
+            onClick={() => onHornoPTTChange(hornoPTT - 10)}
             className="flex-1 min-w-[80px] h-12 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-200"
           >
             -10
           </button>
           <button
-            onClick={() => setHornoPTT(hornoPTT - 1)}
+            onClick={() => onHornoPTTChange(hornoPTT - 1)}
             className="flex-1 min-w-[80px] h-12 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition duration-200"
           >
             -1
