@@ -27,6 +27,7 @@ interface TableProps {
   onToggleDelivered: (index: number) => void;
 }
 
+// Función que asigna las clases de borde según el tiempo del pedido
 const getBorderClass = (order: Order, now: Date) => {
   if (order.delivered) return "";
 
@@ -50,6 +51,27 @@ const getBorderClass = (order: Order, now: Date) => {
     return "border-l-4 border-r-4 border-t-4 border-b-4 border-red-500";
 
   return "";
+};
+
+// Función que calcula el precio total teniendo en cuenta medias raciones
+const calculatePrice = (
+  order: Order,
+  prices: { chicken: number; halfChicken: number; potatoes: number; halfPotatoes: number }
+) => {
+  // Cálculo para los pollos:
+  // Se asume que order.chickens es múltiplo de 0.5.
+  const fullChickenCount = Math.floor(order.chickens);
+  const hasHalfChicken = order.chickens - fullChickenCount > 0;
+  const chickenPrice =
+    fullChickenCount * prices.chicken + (hasHalfChicken ? prices.halfChicken : 0);
+
+  // Cálculo para las patatas:
+  const fullPotatoesCount = Math.floor(order.potatoes);
+  const hasHalfPotato = order.potatoes - fullPotatoesCount > 0;
+  const potatoesPrice =
+    fullPotatoesCount * prices.potatoes + (hasHalfPotato ? prices.halfPotatoes : 0);
+
+  return chickenPrice + potatoesPrice;
 };
 
 export function Table({
@@ -108,9 +130,7 @@ export function Table({
                   <td>{order.paid ? "✅" : "❌"}</td>
                   <td>{order.preferences?.join(", ") || ""}</td>
                   <td>
-                    {order.chickens * prices.chicken +
-                      order.potatoes * prices.potatoes}{" "}
-                    €
+                    {calculatePrice(order, prices)} €
                   </td>
                   <td>
                     <button
@@ -180,7 +200,7 @@ export function Table({
                   </button>
                 </div>
               </div>
-              <div className=" flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2">
                 <p>
                   <strong>🐔:</strong> {order.chickens}
                 </p>
@@ -198,10 +218,7 @@ export function Table({
                   {order.preferences?.join(", ") || "-"}
                 </p>
                 <p className="col-span-2">
-                  <strong>Precio:</strong>{" "}
-                  {order.chickens * prices.chicken +
-                    order.potatoes * prices.potatoes}{" "}
-                  €
+                  <strong>Precio:</strong> {calculatePrice(order, prices)} €
                 </p>
               </div>
               <div className="mt-3"></div>
@@ -212,6 +229,7 @@ export function Table({
     </>
   );
 }
+
 
 /* TABLA ORIGINAL */
 /*
