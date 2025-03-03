@@ -24,14 +24,14 @@ export default function Details({
   return (
     <div className="p-4 space-y-4">
       {/* Grupo 1: Totales */}
-      <div className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-blue-600">
+      {/*<div className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-blue-600">
         <h1 className="text-xl font-semibold text-white mb-4">
           Pollo Total: {hornoP + totalChickens - deliveredChickens}
         </h1>
         <h1 className="text-xl font-semibold text-white mb-4">
           Patatas Total: {hornoPTT + totalPotatoes - deliveredPotatoes}
         </h1>
-      </div>
+      </div>*/}
 
       {/* Horno P */}
       <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border-l-4 border-l-gray-600">

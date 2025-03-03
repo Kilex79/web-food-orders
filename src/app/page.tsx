@@ -72,7 +72,7 @@ export default function Home() {
 
   useEffect(() => {
     // Consideramos solo los pedidos activos (no eliminados)
-    const activeOrders = orders.filter(order => !order.deleted);
+    const activeOrders = orders.filter((order) => !order.deleted);
     if (activeOrders.length > 0) {
       const totalChickens = activeOrders.reduce(
         (total, order) => total + Number(order.chickens),
@@ -162,7 +162,7 @@ export default function Home() {
   };
 
   // Filtrar para mostrar solo pedidos activos
-  const activeOrders = orders.filter(order => !order.deleted);
+  const activeOrders = orders.filter((order) => !order.deleted);
 
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
