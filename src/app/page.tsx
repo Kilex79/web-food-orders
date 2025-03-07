@@ -166,7 +166,8 @@ export default function Home() {
 
   return (
     <main className="bg-gray-900 dark:bg-gray-900 min-h-screen">
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Grid: 1 columna en mobile y 4 columnas en pantallas md y superiores */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="col-span-1 md:col-span-3 p-4 md:p-8 overflow-auto">
           <h1 className="relative text-2xl md:text-4xl font-bold text-gray-100 mb-4 border-4 border-gray-700 rounded-lg p-4">
             <span className="block text-center w-full">{currentDayTitle}</span>
@@ -177,6 +178,35 @@ export default function Home() {
               <InformationCircleIcon className="h-8 w-8 text-blue-500 cursor-pointer" />
             </Link>
           </h1>
+          {/* Versión móvil: Details se muestra justo después del h1 */}
+          <div className="md:hidden mb-4">
+            <Details
+              totalChickens={activeOrders.reduce(
+                (total, order) => total + Number(order.chickens),
+                0
+              )}
+              totalPotatoes={activeOrders.reduce(
+                (total, order) => total + Number(order.potatoes),
+                0
+              )}
+              deliveredChickens={activeOrders
+                .filter((order) => order.delivered)
+                .reduce(
+                  (total, order) => total + Number(order.chickens),
+                  0
+                )}
+              deliveredPotatoes={activeOrders
+                .filter((order) => order.delivered)
+                .reduce(
+                  (total, order) => total + Number(order.potatoes),
+                  0
+                )}
+              hornoP={pollosHorno}
+              hornoPTT={patatasHorno}
+              onHornoPChange={setPollosHorno}
+              onHornoPTTChange={setPatatasHorno}
+            />
+          </div>
 
           <div className="flex flex-col gap-4">
             <button
@@ -194,7 +224,8 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="col-span-1 h-auto md:h-screen border-t-4 md:border-t-0 md:border-l-4 border-gray-700 dark:border-gray-700 bg-gray-800 dark:bg-gray-800">
+        {/* Versión escritorio: Details se muestra en la columna derecha */}
+        <div className="hidden md:block md:col-span-1 h-auto md:h-screen border-l-4 border-gray-700 dark:border-gray-700 bg-gray-800 dark:bg-gray-800">
           <Details
             totalChickens={activeOrders.reduce(
               (total, order) => total + Number(order.chickens),
@@ -206,10 +237,16 @@ export default function Home() {
             )}
             deliveredChickens={activeOrders
               .filter((order) => order.delivered)
-              .reduce((total, order) => total + Number(order.chickens), 0)}
+              .reduce(
+                (total, order) => total + Number(order.chickens),
+                0
+              )}
             deliveredPotatoes={activeOrders
               .filter((order) => order.delivered)
-              .reduce((total, order) => total + Number(order.potatoes), 0)}
+              .reduce(
+                (total, order) => total + Number(order.potatoes),
+                0
+              )}
             hornoP={pollosHorno}
             hornoPTT={patatasHorno}
             onHornoPChange={setPollosHorno}

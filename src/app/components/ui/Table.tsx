@@ -166,79 +166,78 @@ export function Table({
       </div>
 
       {/* Vista de cards para dispositivos móviles */}
-<div className="block xl:hidden space-y-2 text-xs">
-  {orders.map((order, index) => {
-    if (order.deleted) return null;
-    return (
-      <div
-        key={index}
-        className={`card relative shadow-lg p-2 ${getBorderClass(
-          order,
-          currentTime
-        )} ${
-          order.delivered
-            ? "bg-gray-700 border-gray-500 border-4 opacity-35"
-            : ""
-        }`}
-      >
-        <div className="flex justify-between items-center border-b pb-2 mb-2">
-          <span className="text-xl font-semibold">
-            {order.name} {order.phone && <span>(📞)</span>}
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => onEditOrder(order, index)}
-              title="Editar pedido"
-              className="text-blue-500 hover:text-blue-700"
-            >
-              <PencilSquareIcon className="w-6 h-6" />
-            </button>
-            <button
-              onClick={() => onToggleDelivered(index)}
-              className={`w-36 py-2 text-white font-bold rounded transition-colors ${
+      <div className="block xl:hidden space-y-2 text-xs">
+        {orders.map((order, index) => {
+          if (order.deleted) return null;
+          return (
+            <div
+              key={index}
+              className={`card relative shadow-lg p-2 ${getBorderClass(
+                order,
+                currentTime
+              )} ${
                 order.delivered
-                  ? "bg-green-500 hover:bg-green-600"
-                  : "bg-gray-500 hover:bg-gray-600"
+                  ? "bg-gray-700 border-gray-500 border-4 opacity-35"
+                  : ""
               }`}
             >
-              {order.delivered ? "Entregado ✔️" : "No entregado ❌"}
-            </button>
-          </div>
-        </div>
-        <div className="flex justify-between">
-          {/* Columna Izquierda */}
-          <div className="flex flex-col gap-2 text-sm">
-            <div className="flex gap-2">
-              <p>
-                <strong>🐔:</strong> {order.chickens}
-              </p>
-              <p>
-                <strong>🥔:</strong> {order.potatoes}
-              </p>
+              <div className="flex justify-between items-center border-b pb-2 mb-2">
+                <span className="text-xl font-semibold">
+                  {order.name} {order.phone && <span>(📞)</span>}
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => onEditOrder(order, index)}
+                    title="Editar pedido"
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    <PencilSquareIcon className="w-6 h-6" />
+                  </button>
+                  <button
+                    onClick={() => onToggleDelivered(index)}
+                    className={`w-36 py-2 text-white font-bold rounded transition-colors ${
+                      order.delivered
+                        ? "bg-green-500 hover:bg-green-600"
+                        : "bg-gray-500 hover:bg-gray-600"
+                    }`}
+                  >
+                    {order.delivered ? "Entregado ✔️" : "No entregado ❌"}
+                  </button>
+                </div>
+              </div>
+              <div className="flex justify-between">
+                {/* Columna Izquierda */}
+                <div className="flex flex-col gap-2 text-sm">
+                  <div className="flex gap-2">
+                    <p>
+                      <strong>🐔:</strong> {order.chickens}
+                    </p>
+                    <p>
+                      <strong>🥔:</strong> {order.potatoes}
+                    </p>
+                  </div>
+                  <p>
+                    <strong>Hora:</strong> {order.time}
+                  </p>
+                  <p>
+                    <strong>Preferencias:</strong>{" "}
+                    {order.preferences?.join(", ") || "-"}
+                  </p>
+                </div>
+                {/* Columna Derecha */}
+                <div className="flex flex-col justify-between text-sm">
+                  <p>
+                    <strong>Pagado:</strong> {order.paid ? "✅" : "❌"}
+                  </p>
+                  <p className="text-end">
+                    <strong>Precio:</strong> {calculatePrice(order, prices)} €
+                  </p>
+                </div>
+              </div>
             </div>
-            <p>
-              <strong>Hora:</strong> {order.time}
-            </p>
-            <p>
-              <strong>Preferencias:</strong>{" "}
-              {order.preferences?.join(", ") || "-"}
-            </p>
-          </div>
-          {/* Columna Derecha */}
-          <div className="flex flex-col justify-between text-sm">
-            <p>
-              <strong>Pagado:</strong> {order.paid ? "✅" : "❌"}
-            </p>
-            <p className="text-end">
-              <strong>Precio:</strong> {calculatePrice(order, prices)} €
-            </p>
-          </div>
-        </div>
+          );
+        })}
       </div>
-    );
-  })}
-</div>
-
     </>
   );
 }
