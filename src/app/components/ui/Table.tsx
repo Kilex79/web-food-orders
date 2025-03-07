@@ -122,7 +122,7 @@ export function Table({
                   className={`${getBorderClass(
                     order,
                     currentTime
-                  )} hover:bg-slate-600 ${
+                  )} hover:bg-slate-600 border-gray-500 border-4 ${
                     order.delivered
                       ? "bg-gray-700 border-gray-500 border-4 opacity-35"
                       : ""
@@ -166,13 +166,13 @@ export function Table({
       </div>
 
       {/* Vista de cards para dispositivos móviles */}
-      <div className="block xl:hidden space-y-2 text-xs">
+      <div className="block xl:hidden space-y-2 text-sm">
         {orders.map((order, index) => {
           if (order.deleted) return null;
           return (
             <div
               key={index}
-              className={`card relative shadow-lg p-2 ${getBorderClass(
+              className={`card relative shadow-lg p-2 border-gray-500 border-4 ${getBorderClass(
                 order,
                 currentTime
               )} ${
@@ -191,7 +191,7 @@ export function Table({
                     title="Editar pedido"
                     className="text-blue-500 hover:text-blue-700"
                   >
-                    <PencilSquareIcon className="w-6 h-6" />
+                    <PencilSquareIcon className="w-8 h-8" />
                   </button>
                   <button
                     onClick={() => onToggleDelivered(index)}
@@ -207,7 +207,7 @@ export function Table({
               </div>
               <div className="flex justify-between">
                 {/* Columna Izquierda */}
-                <div className="flex flex-col gap-2 text-sm">
+                <div className="flex flex-col gap-2 text-lg">
                   <div className="flex gap-2">
                     <p>
                       <strong>🐔:</strong> {order.chickens}
@@ -225,7 +225,7 @@ export function Table({
                   </p>
                 </div>
                 {/* Columna Derecha */}
-                <div className="flex flex-col justify-between text-sm">
+                <div className="flex flex-col justify-between text-lg">
                   <p>
                     <strong>Pagado:</strong> {order.paid ? "✅" : "❌"}
                   </p>
